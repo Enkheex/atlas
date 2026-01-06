@@ -82,45 +82,57 @@ export default function Map({
     });
 
     // --- UPDATED MARKER LOGIC START ---
-    data.map((buildingItem) => {
-      // 1. Create a Container for Label + Dot
-      const el = document.createElement('div');
-      el.className = 'flex flex-col items-center cursor-pointer group hover:z-50'; // Stack vertically
+        data.map((buildingItem) => {
+          const el = document.createElement('div');
+          // 'group' allows us to animate the label when hovering the dot
+          el.className = 'flex flex-col items-center cursor-pointer group z-10 hover:z-50';
 
-      // 2. Inject HTML: Label on top, Dot on bottom
-      // Note: text-[#005596] is the hardcoded NUM Blue.
-      // Change to text-num-blue if you updated tailwind.config.js
-      el.innerHTML = `
-        <div class="mb-1 px-2 py-1 bg-white/95 border border-gray-200 rounded shadow-md">
-          <p class="text-[12px] font-bold text-[#005596] whitespace-nowrap leading-none">
-            ${buildingItem.building}
-          </p>
+          el.innerHTML = `
+        <!-- LABEL CONTAINER -->
+        <div class="mb-3 transform transition-all duration-300 ease-out group-hover:-translate-y-1">
+          
+          <!-- The Card -->
+          <div class="relative flex items-center bg-white rounded-lg shadow-[0_8px_16px_rgba(0,0,0,0.15)] overflow-hidden">
+            
+            <!-- Blue Accent Strip -->
+            <div class="w-1.5 self-stretch bg-[#005596]"></div>
+            
+            <!-- Text Content (Building Name Only) -->
+            <div class="px-3 py-2">
+              <p class="text-[11px] font-extrabold text-gray-800 uppercase tracking-wider whitespace-nowrap leading-none">
+                ${buildingItem.building}
+              </p>
+            </div>
+
+            <!-- Little Arrow pointing down -->
+            <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rotate-45 shadow-sm z-[-1]"></div>
+          </div>
         </div>
-        <div class="${getColorByStatus(buildingItem.building_status)} border-2 border-white"></div>
+
+        <!-- THE DOT (Anchor) -->
+        <div class="relative flex items-center justify-center">
+          <div class="w-3.5 h-3.5 bg-[#005596] rounded-full border-2 border-white shadow-md z-10 transition-transform duration-300 group-hover:scale-125"></div>
+          <div class="absolute w-8 h-8 bg-[#005596]/20 rounded-full animate-pulse z-0"></div>
+        </div>
       `;
 
-      // 3. Add Click Listener
-      el.addEventListener('click', () => {
-        const accordionItem = document.getElementById(buildingItem.building_code);
 
-        setTimeout(() => {
-          if (accordionItem) {
-            accordionItem.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start',
-            });
+          // Click Listener
+          el.addEventListener('click', () => {
+            const accordionItem = document.getElementById(buildingItem.building_code);
+            setTimeout(() => {
+              if (accordionItem) {
+                accordionItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }, 300);
+            handleMarkerClick(buildingItem.building_code);
+          });
+
+          if (mapRef.current && buildingItem.coords) {
+            new mapboxgl.Marker(el).setLngLat([buildingItem.coords[0], buildingItem.coords[1]]).addTo(mapRef.current);
           }
-        }, 300);
+        });
 
-        handleMarkerClick(buildingItem.building_code);
-      });
-
-      // 4. Add to Map
-      if (mapRef.current && buildingItem.coords) {
-        // coords are [long, lat] from your Python API
-        new mapboxgl.Marker(el).setLngLat([buildingItem.coords[0], buildingItem.coords[1]]).addTo(mapRef.current);
-      }
-    });
     // --- UPDATED MARKER LOGIC END ---
 
     if (userPos) {
@@ -145,22 +157,8 @@ export default function Map({
   ];
 
   return (
-    <div className="h-[60vh] sm:w-full sm:h-full relative bg-red-500/0 rounded-[20px] p-2 sm:p-0">
-      <div id="map-container" ref={mapContainerRef} className="opacity-100" />
-      <div className="bg-[#18181b]/90 absolute bottom-10 left-2 sm:bottom-8 sm:left-0 flex flex-col gap-2 m-1 py-2.5 p-2 rounded-[16px]">
-        <div className="flex items-center gap-0">
-          <div className="h-2 w-2 rounded-full bg-red-400 flex-none"></div>
-          <div className="ml-2 rounded-lg px-2 py-1 text-sm w-full bg-red-700/30 text-red-300/90">unavailable</div>
-        </div>
-        <div className="flex items-center gap-0">
-          <div className="h-2 w-2 rounded-full bg-amber-400 flex-none"></div>
-          <div className="ml-2 rounded-lg px-2 py-1 text-sm w-full bg-amber-800/30 text-amber-300/90">opening soon</div>
-        </div>
-        <div className="flex items-center gap-0">
-          <div className="h-2 w-2 rounded-full bg-green-400 flex-none"></div>
-          <div className="ml-2 rounded-lg px-2 py-1 text-sm w-full bg-green-800/30 text-green-300/90">open now</div>
-        </div>
-      </div>
+    <div className="h-[60vh] sm:w-full sm:h-full relative bg-gray-100 rounded-[20px] overflow-hidden border border-gray-200">
+      <div id="map-container" ref={mapContainerRef} className="w-full h-full" />
     </div>
   );
 }

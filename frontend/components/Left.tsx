@@ -1,165 +1,78 @@
-"use client";
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from "@/components/ui/accordion";
+'use client';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface DataFormat {
-    building: string;
-    building_code: string;
-    building_status: string;
-    rooms: {
-        [key: string]: {
-            roomNumber: string;
-            slots: { StartTime: string; EndTime: string; Status: string }[];
-        };
+  building: string;
+  building_code: string;
+  rooms: {
+    [key: string]: {
+      slots: any[];
     };
-    coords: [number, number];
+  };
+  coords: [number, number];
 }
-
-function formatTime(timeString: string) {
-    const options = {
-        hour: "numeric" as "numeric",
-        minute: "numeric" as "numeric",
-        hour12: true,
-    };
-    const time = new Date(`1970-01-01T${timeString}`);
-    return new Intl.DateTimeFormat("en-US", options).format(time);
-}
-
-function statusLabel(status: string) {
-    return (
-        <div
-            className={`rounded-lg px-2 py-1 text-sm w-[fit-content]
-                ${status === "unavailable" && "bg-red-700/20 text-red-300/80"}
-                ${status === "available" && "bg-green-800/20 text-green-300/90"}
-                ${status === "upcoming" && "bg-amber-800/20 text-amber-300/90"}
-                `}
-        >
-            {status}
-        </div>
-    );
-}
-
-function statusIndicator(status: string) {
-    return (
-        <div
-            className={`h-2 w-2 rounded-full 
-                    ${status === "unavailable" && "bg-red-400"}
-                    ${status === "available" && "bg-green-400"}
-                    ${status === "upcoming" && "bg-amber-400"}
-                        `}
-        ></div>
-    );
-}
-
-const date = new Date();
-const day = date.getDay();
 
 export default function Left({
-    data,
-    activeBuilding,
-    setActiveBuilding,
+  data,
+  activeBuilding,
+  setActiveBuilding,
 }: {
-    data: DataFormat[];
-    activeBuilding: string | null;
-    setActiveBuilding: (building: string) => void;
+  data: DataFormat[];
+  activeBuilding: string | null;
+  setActiveBuilding: (building: string) => void;
 }) {
-    if (data.length === 0 || !data) {
-        return (
-            <div className="px-8 my-2">
-                <Alert className="mx-auto w-fit text-center">
-                    <AlertDescription>
-                        Data not available after 10:00 PM
-                    </AlertDescription>
-                </Alert>
-            </div>
-        );
-    }
+  if (!data || data.length === 0) {
     return (
-        <div className="px-8">
-            {day == 0 || day == 6 ? (
-                <div className="my-2">
-                    <Alert className="mx-auto w-fit text-center">
-                        <AlertDescription>
-                            Data on weekends represents data for the coming
-                            Monday
-                        </AlertDescription>
-                    </Alert>
-                </div>
-            ) : null}
-            <Accordion
-                type="single"
-                collapsible
-                className="w-full"
-                value={activeBuilding || ""}
-                onValueChange={(val) => setActiveBuilding(val)}
-            >
-                {data.map((building) => (
-                    <AccordionItem
-                        id={building.building_code}
-                        value={building.building_code}
-                        key={building.building_code}
-                        className=""
-                    >
-                        <AccordionTrigger>
-                            <div className="flex justify-between w-[95%] text-left text-lg group items-center">
-                                <div className="group-hover:underline underline-offset-8 pr-2">
-                                    {building.building_code} -{" "}
-                                    {building.building}
-                                </div>
-                                <div className="">
-                                    {statusLabel(building.building_status)}
-                                </div>
-                            </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="divide-y divide-dashed divide-zinc-600">
-                            {building.rooms &&
-                                Object.entries(building.rooms).map(
-                                    ([roomNumber, room]) => {
-                                        return (
-                                            <div
-                                                key={roomNumber}
-                                                className="flex justify-between py-4 text-lg font-[family-name:var(--font-geist-mono)] text-[16px]"
-                                            >
-                                                <div className="flex gap-4 items-center h-[fit-content]">
-                                                    <div className="w-18">
-                                                        {building.building_code}{" "}
-                                                        {roomNumber}
-                                                    </div>
-                                                    <div className="relative">
-                                                        {statusIndicator(
-                                                            room.slots[0].Status
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <ul className="text-right">
-                                                    {room.slots.map(
-                                                        (slot, index) => (
-                                                            <li key={index}>
-                                                                {formatTime(
-                                                                    slot.StartTime
-                                                                )}{" "}
-                                                                -{" "}
-                                                                {formatTime(
-                                                                    slot.EndTime
-                                                                )}
-                                                            </li>
-                                                        )
-                                                    )}
-                                                </ul>
-                                            </div>
-                                        );
-                                    }
-                                )}
-                        </AccordionContent>
-                    </AccordionItem>
-                ))}
-            </Accordion>
-        </div>
+      <div className="px-8 my-4">
+        <Alert className="mx-auto w-fit text-center bg-gray-50 border-gray-200">
+          <AlertDescription className="text-gray-500">Loading campus data...</AlertDescription>
+        </Alert>
+      </div>
     );
+  }
+
+  return (
+    <div className="px-4 md:px-6 overflow-y-auto max-h-[85vh]">
+      <h2 className="text-xl font-bold text-[#005596] mb-4 mt-4 px-1">NUM Campus Map</h2>
+
+      <Accordion type="single" collapsible className="w-full space-y-2" value={activeBuilding || ''} onValueChange={(val) => setActiveBuilding(val)}>
+        {data.map((building) => (
+          <AccordionItem
+            id={building.building_code}
+            value={building.building_code}
+            key={building.building_code}
+            className="border border-gray-200 rounded-lg bg-white shadow-sm overflow-hidden"
+          >
+            <AccordionTrigger className="px-4 py-3 hover:bg-gray-50 hover:no-underline transition-all">
+              <div className="flex flex-col text-left">
+                <span className="font-bold text-gray-800 text-base">{building.building}</span>
+                <span className="text-xs text-gray-400 font-mono">CODE: {building.building_code}</span>
+              </div>
+            </AccordionTrigger>
+
+            <AccordionContent className="bg-gray-50/50 px-4 py-4 border-t border-gray-100">
+              <div className="mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Rooms</div>
+
+              {building.rooms && Object.keys(building.rooms).length > 0 ? (
+                <div className="grid grid-cols-2 gap-3">
+                  {Object.keys(building.rooms).map((roomName) => (
+                    <div
+                      key={roomName}
+                      className="flex items-center justify-center p-2.5 bg-white border border-gray-200 rounded-md hover:border-[#005596] hover:shadow-sm transition-all cursor-default"
+                    >
+                      <span className="text-sm font-medium text-gray-700">{roomName}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-4 text-gray-400 italic text-sm">No room information.</div>
+              )}
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </div>
+  );
 }

@@ -1,81 +1,53 @@
-// /app/api/open-classrooms/route.ts
+import { NextResponse } from 'next/server';
 
-import { NextResponse } from "next/server";
-
-interface dataFormat {
-    // Define the structure of the expected data here
-    building: string;
-    building_code: string;
-    rooms: {
-        roomNumber: string;
-        slots: { StartTime: string; EndTime: string; status: string }[];
-    }[];
-    coords: [number, number];
-    distance: number;
-}
+// Define the backend URL from environment variables
+// Fallback to localhost if not set (safety net)
+const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8080';
 
 export async function POST(req: Request) {
-    try {
-        // Extract user location from the request body
-        const { lat, lng } = await req.json();
+  try {
+    const body = await req.json();
 
-        // Send the user location to the backend
-        const response = await fetch(
-            "https://spots-backend-1036276518870.us-central1.run.app/api/open-classrooms",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ lat, lng }),
-            }
-        );
+    // Connect to YOUR Python backend
+    const response = await fetch(`${BACKEND_URL}/api/open-classrooms`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
 
-        if (!response.ok) {
-            return NextResponse.json(
-                { error: "Failed to fetch data" },
-                { status: 500 }
-            );
-        }
-
-        // Get data from backend
-        const data: dataFormat[] = await response.json();
-        return NextResponse.json(data);
-    } catch (error) {
-        console.error("Error in route:", error);
-        return NextResponse.json(
-            { error: "Failed to process request" },
-            { status: 500 }
-        );
+    if (!response.ok) {
+      console.error(`Backend Error: ${response.status}`);
+      return NextResponse.json({ error: 'Failed to fetch data from backend' }, { status: response.status });
     }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Error in POST route proxy:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
 }
 
 export async function GET() {
-    try {
-        // Fetch the default data without location
-        const response = await fetch(
-            "https://spots-backend-1036276518870.us-central1.run.app/api/open-classrooms",
-            {
-                method: "GET",
-                cache: "no-cache",
-            }
-        );
+  try {
+    // Connect to YOUR Python backend
+    const response = await fetch(`${BACKEND_URL}/api/open-classrooms`, {
+      method: 'GET',
+      // 'no-store' is better for real-time availability than 'no-cache'
+      cache: 'no-store',
+    });
 
-        if (!response.ok) {
-            return NextResponse.json(
-                { error: "Failed to fetch data" },
-                { status: 500 }
-            );
-        }
-
-        // Get data from backend
-        const data: dataFormat[] = await response.json();
-        return NextResponse.json(data);
-    } catch (error) {
-        console.error("Error in GET route:", error);
-        return NextResponse.json(
-            { error: "Failed to process request" },
-            { status: 500 }
-        );
+    if (!response.ok) {
+      console.error(`Backend Error: ${response.status}`);
+      return NextResponse.json({ error: 'Failed to fetch data from backend' }, { status: response.status });
     }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Error in GET route proxy:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
 }

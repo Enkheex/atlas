@@ -1,7 +1,7 @@
 'use client';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import Image from 'next/image'; // <--- Added Import
 
 interface DataFormat {
   building: string;
@@ -35,7 +35,17 @@ export default function Left({
 
   return (
     <div className="px-4 md:px-6 overflow-y-auto max-h-[85vh]">
-      <h2 className="text-xl font-bold text-[#005596] mb-4 mt-4 px-1">NUM Campus Map</h2>
+      {/* --- HEADER WITH LOGO START --- */}
+      <div className="flex items-center gap-3 mb-6 mt-6 px-1">
+        <div className="relative h-14 w-14 flex-shrink-0">
+          <Image src="/logo.svg" alt="NUM Logo" fill className="object-contain" priority />
+        </div>
+        <div className="flex flex-col">
+          <h1 className="text-xl font-extrabold text-[#005596] leading-none tracking-tight">NUM ATLAS</h1>
+          <p className="text-[11px] text-gray-500 font-semibold tracking-wide uppercase mt-1">Campus Map</p>
+        </div>
+      </div>
+      {/* --- HEADER WITH LOGO END --- */}
 
       <Accordion type="single" collapsible className="w-full space-y-2" value={activeBuilding || ''} onValueChange={(val) => setActiveBuilding(val)}>
         {data.map((building) => (

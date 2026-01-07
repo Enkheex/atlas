@@ -14,8 +14,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-    title: "Spots",
-    description: "Open Classrooms @ UWaterloo",
+    title: "NUM ATLAS",
+    description: "Classrooms finder for NUM",
 };
 
 export default function RootLayout({

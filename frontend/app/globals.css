@@ -35,6 +35,6 @@ body {
 #map-container {
     height: 100%;
     width: 100%;
-    background-color: lightgrey;
+    background-color: white;
     border-radius: 20px;
 }

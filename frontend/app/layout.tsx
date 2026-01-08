@@ -14,8 +14,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-    title: "NUM ATLAS",
-    description: "Classrooms finder for NUM",
+    title: "МУИС Кампус Атлас",
+    description: "Campus atlas for NUM(МУИС)",
 };
 
 export default function RootLayout({

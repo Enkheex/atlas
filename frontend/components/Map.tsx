@@ -43,8 +43,8 @@ export default function Map({
       zoom: zoom,
       pitch: 52,
       maxBounds: [
-        [106.9159, 47.9133], // Southwest Corner (West Campus limit, Nuclear Center Latitude)
-        [106.9722, 47.9267], // Northeast Corner (Nuclear Center Longitude, North Campus limit)
+        [106.915963, 47.916643], // Southwest Corner (West Limit, New South Limit)
+        [106.960447, 47.926301], // Northeast Corner (New East Limit, North Limit)
       ],
       minZoom: 14,
       maxZoom: 18,

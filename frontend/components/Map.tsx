@@ -41,8 +41,8 @@ export default function Map({
       zoom: zoom,
       pitch: 52,
       maxBounds: [
-        [106.91, 47.91],
-        [106.925, 47.925],
+        [106.9085, 47.9085], // Southwest (Slightly lower/left)
+        [106.9265, 47.9265], // Northeast (Slightly higher/right)
       ],
       minZoom: 15,
       maxZoom: 18,
@@ -87,6 +87,9 @@ export default function Map({
             // Height: 12 meters (3 floors)
             'fill-extrusion-height': 9.9,
             'fill-extrusion-base': 0,
+            'fill-extrusion-opacity': 1,
+            // This creates the 3D shading look
+            'fill-extrusion-vertical-gradient': true,
           },
         });
       }

@@ -15,9 +15,9 @@ export interface BuildingData {
 export const CAMPUS_DATA: BuildingData[] = [
   {
     id: 'MB',
-    name: 'Main Building',
+    name: 'Хичээлийн 1-р байр',
     code: 'MB',
-    coords: [106.919000736241, 47.92269453067302],
+    coords: [106.91900731736291, 47.9227976745249],
     rooms: [
       { number: '101', floor: 1, type: 'Lecture Hall' },
       { number: '102', floor: 1, type: 'Office' },
@@ -28,9 +28,9 @@ export const CAMPUS_DATA: BuildingData[] = [
   },
   {
     id: 'LEAB',
-    name: 'Engineering Building',
+    name: 'Хичээлийн 3-р байр',
     code: 'LEAB',
-    coords: [106.9185, 47.919],
+    coords: [106.91844856701238, 47.92400101407196],
     rooms: [
       { number: '120', floor: 1, type: 'Physics Lab' },
       { number: '215', floor: 2, type: 'Computer Lab' },
@@ -39,9 +39,9 @@ export const CAMPUS_DATA: BuildingData[] = [
   },
   {
     id: 'LIB',
-    name: 'Library',
+    name: 'Номын сан',
     code: 'LIB',
-    coords: [106.917, 47.918],
+    coords: [106.92057817158883, 47.92282117839716],
     rooms: [
       { number: '101', floor: 1, type: 'Reading Hall' },
       { number: '201', floor: 2, type: 'Quiet Zone' },
@@ -49,9 +49,9 @@ export const CAMPUS_DATA: BuildingData[] = [
   },
   {
     id: 'lit',
-    name: 'lite',
+    name: 'Хичээлийн 2-р байр',
     code: 'lit',
-    coords: [106.9165654912963, 47.91929467723432],
+    coords: [106.9221196452063, 47.92284389553936],
     rooms: [
       { number: '101', floor: 1, type: 'Reading Hall' },
       { number: '201', floor: 2, type: 'Quiet Zone' },

@@ -17,29 +17,23 @@ export default function Map({
 }) {
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
-  
- // Default Position
+
   const [center] = useState<[number, number]>([106.920315, 47.922527]);
   const [zoom] = useState(16);
 
-  // Access the token
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
   // 1. Initialize Map
   useEffect(() => {
-    // Safety Check: If no token, stop here to prevent crash
     if (!mapboxToken) {
       console.error('❌ Mapbox token is missing. Please check .env.local');
       return;
     }
 
-    // Assign token BEFORE creating the map
     mapboxgl.accessToken = mapboxToken;
 
-    // Ensure map container exists
     if (!mapContainerRef.current) return;
 
-    // Create the Map
     mapRef.current = new mapboxgl.Map({
       style: 'mapbox://styles/irmuun360/cmk2pwcoy00e001s98ror2wtf',
       container: mapContainerRef.current,
@@ -54,11 +48,55 @@ export default function Map({
       maxZoom: 18,
     });
 
-    // Cleanup when component unmounts
+    // --- ADD CUSTOM BUILDING (3D Shape) ---
+    mapRef.current.on('load', () => {
+      if (!mapRef.current) return;
+
+      // Check if source already exists to prevent errors on hot-reload
+      if (!mapRef.current.getSource('custom-missing-building')) {
+        mapRef.current.addSource('custom-missing-building', {
+          type: 'geojson',
+          data: {
+            type: 'Feature',
+            geometry: {
+              type: 'Polygon', // Changed from LineString to Polygon for 3D
+              coordinates: [
+                [
+                  [106.91845019391809, 47.923336570830344],
+                  [106.918715589008, 47.92335137656889],
+                  [106.9186019157687, 47.92392479339236],
+                  [106.91909484805876, 47.92398185583042],
+                  [106.91898617767174, 47.92444638314285],
+                  [106.91824852212318, 47.924379927628706],
+                  [106.91845026859647, 47.92333663321952],
+                ],
+              ],
+            },
+            properties: {},
+          },
+        });
+
+        // 2. Draw the 3D extrusion
+        mapRef.current.addLayer({
+          id: 'custom-building-extrusion',
+          type: 'fill-extrusion',
+          source: 'custom-missing-building',
+          paint: {
+            // Color: #f5f0e5 to match default map buildings
+            'fill-extrusion-color': '#f5f0e5',
+            // Height: 12 meters (3 floors)
+            'fill-extrusion-height': 9.9,
+            'fill-extrusion-base': 0,
+          },
+        });
+      }
+    });
+    // --- END CUSTOM BUILDING ---
+
     return () => {
       mapRef.current?.remove();
     };
-  }, [mapboxToken]); // Run this effect when token loads
+  }, [mapboxToken]);
 
   // 2. Handle "Fly To" Animation
   useEffect(() => {
@@ -83,6 +121,7 @@ export default function Map({
     data.forEach((building) => {
       const el = document.createElement('div');
       el.className = 'flex flex-col items-center cursor-pointer group z-10 hover:z-50';
+
       el.innerHTML = `
         <div class="mb-3 transform transition-all duration-300 ease-out group-hover:-translate-y-1">
           <div class="relative flex items-center bg-white rounded-lg shadow-[0_8px_16px_rgba(0,0,0,0.15)] overflow-hidden">
@@ -110,7 +149,6 @@ export default function Map({
       markers.push(marker);
     });
 
-    // User Position Marker
     if (userPos) {
       const elUser = document.createElement('div');
       elUser.className = 'h-3 w-3 border-[1.5px] border-zinc-50 rounded-full bg-blue-400 shadow-[0px_0px_4px_2px_rgba(14,165,233,1)]';
@@ -123,7 +161,7 @@ export default function Map({
   }, [data, userPos]);
 
   return (
-    <div className="h-[60vh] sm:w-full sm:h-full relative bg-white rounded-[20px]  overflow-hidden border border-gray-200">
+    <div className="h-[60vh] sm:w-full sm:h-full relative bg-white rounded-[20px] overflow-hidden border border-gray-200 shadow-inner">
       <div ref={mapContainerRef} className="w-full h-full" />
     </div>
   );

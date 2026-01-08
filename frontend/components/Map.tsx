@@ -41,9 +41,10 @@ export default function Map({
       zoom: zoom,
       pitch: 52,
       maxBounds: [
-        [106.9085, 47.9085], // Southwest (Slightly lower/left)
-        [106.9265, 47.9265], // Northeast (Slightly higher/right)
+        [106.913993, 47.917133], // Southwest Corner (West limit, South limit)
+        [106.930869, 47.9265], // Northeast Corner (East limit, North limit)
       ],
+
       minZoom: 15,
       maxZoom: 18,
     });

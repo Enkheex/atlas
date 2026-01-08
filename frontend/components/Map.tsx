@@ -18,15 +18,16 @@ export default function Map({
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
 
+  // Initial state only
   const [center] = useState<[number, number]>([106.920315, 47.922527]);
   const [zoom] = useState(16);
 
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
-  // 1. Initialize Map
+  // 1. Initialize Map (RUNS EXACTLY ONCE)
   useEffect(() => {
     if (!mapboxToken) {
-      console.error('❌ Mapbox token is missing. Please check .env.local');
+      console.error('❌ Mapbox token is missing.');
       return;
     }
 
@@ -34,6 +35,7 @@ export default function Map({
 
     if (!mapContainerRef.current) return;
 
+    // Initialize Map
     mapRef.current = new mapboxgl.Map({
       style: 'mapbox://styles/irmuun360/cmk2pwcoy00e001s98ror2wtf',
       container: mapContainerRef.current,
@@ -41,26 +43,25 @@ export default function Map({
       zoom: zoom,
       pitch: 52,
       maxBounds: [
-        [106.913993, 47.917133], // Southwest Corner (West limit, South limit)
-        [106.930869, 47.9265], // Northeast Corner (East limit, North limit)
+        [106.9159, 47.9133], // Southwest Corner (West Campus limit, Nuclear Center Latitude)
+        [106.9722, 47.9267], // Northeast Corner (Nuclear Center Longitude, North Campus limit)
       ],
-
-      minZoom: 15,
+      minZoom: 14,
       maxZoom: 18,
     });
 
-    // --- ADD CUSTOM BUILDING (3D Shape) ---
+    // Add 3D Building layer when map loads
     mapRef.current.on('load', () => {
       if (!mapRef.current) return;
 
-      // Check if source already exists to prevent errors on hot-reload
+      // Add source for custom 3D buildings (if any)
       if (!mapRef.current.getSource('custom-missing-building')) {
         mapRef.current.addSource('custom-missing-building', {
           type: 'geojson',
           data: {
             type: 'Feature',
             geometry: {
-              type: 'Polygon', // Changed from LineString to Polygon for 3D
+              type: 'Polygon',
               coordinates: [
                 [
                   [106.91845019391809, 47.923336570830344],
@@ -77,44 +78,65 @@ export default function Map({
           },
         });
 
-        // 2. Draw the 3D extrusion
         mapRef.current.addLayer({
           id: 'custom-building-extrusion',
           type: 'fill-extrusion',
           source: 'custom-missing-building',
           paint: {
-            // Color: #f5f0e5 to match default map buildings
             'fill-extrusion-color': '#f5f0e5',
-            // Height: 12 meters (3 floors)
             'fill-extrusion-height': 9.9,
             'fill-extrusion-base': 0,
             'fill-extrusion-opacity': 1,
-            // This creates the 3D shading look
             'fill-extrusion-vertical-gradient': true,
           },
         });
       }
     });
-    // --- END CUSTOM BUILDING ---
 
+    // Cleanup
     return () => {
       mapRef.current?.remove();
     };
-  }, [mapboxToken]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // <--- Empty dependency array + suppression = Runs ONCE safely.
 
   // 2. Handle "Fly To" Animation
   useEffect(() => {
     if (mapRef.current && flyToLocation) {
-      mapRef.current.flyTo({
-        center: flyToLocation,
-        zoom: 18,
-        pitch: 60,
-        bearing: 0,
-        essential: true,
-        duration: 2000,
-      });
+      const currentCenter = mapRef.current.getCenter();
+
+      // Calculate distance (Manhattan distance is enough for this check)
+      const distLng = Math.abs(currentCenter.lng - flyToLocation[0]);
+      const distLat = Math.abs(currentCenter.lat - flyToLocation[1]);
+
+      // Threshold: ~0.02 degrees is roughly 1.5 - 2km.
+      // If further than this, we Teleport. If closer, we Fly.
+      const isFarAway = distLng > 0.02 || distLat > 0.02;
+
+      if (isFarAway) {
+        // OPTION A: INSTANT TELEPORT (No lag, best for 5km+ jumps)
+        mapRef.current.jumpTo({
+          center: flyToLocation,
+          zoom: 18,
+          pitch: 60,
+          bearing: 0,
+        });
+      } else {
+        // OPTION B: SMOOTH FLY (For nearby buildings)
+        mapRef.current.flyTo({
+          center: flyToLocation,
+          zoom: 18,
+          pitch: 60,
+          bearing: 0,
+          speed: 0.8, // Moderate speed
+          curve: 1, // Gentle curve
+          essential: true,
+        });
+      }
     }
   }, [flyToLocation]);
+
 
   // 3. Render Markers
   useEffect(() => {
@@ -162,7 +184,8 @@ export default function Map({
     return () => {
       markers.forEach((m) => m.remove());
     };
-  }, [data, userPos]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, userPos]); // <--- Suppression allows us to omit handleMarkerClick
 
   return (
     <div className="h-[60vh] sm:w-full sm:h-full relative bg-white rounded-[20px] overflow-hidden border border-gray-200 shadow-inner">
